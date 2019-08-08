@@ -1,0 +1,57 @@
+=====================================================
+Problem about SSL#1 : fatal: unable to access 'https://gitlab.example.com/suparuek/pratice/': Peer's certificate issuer has been marked as not trusted by the user.
+===================================================
+
+Found this following site helpful,But its good when you have entire control for the proxy server as well to enter the certificates.
+
+http://dropbit.com/?p=168
+
+I instead ran following command to bypass ssl verification by porxy server and it worked
+
+git config --global http.sslVerify "false"
+You need to configure /etc/gitlab/gitlab.rb. Change this line
+
+  nginx['ssl_certificate'] = "/etc/gitlab/<your-local-path>/cert.pem"
+to
+
+  nginx['ssl_certificate'] = "/etc/gitlab/<your-local-path>/fullchain.pem"
+(Assuming, you already have nginx enabled and you have correctly issued certificates, e.g. from LetsEncrypt.)
+
+then restart gitlab and you're done:
+
+  $ gitlab-ctl reconfigure
+Why - cert.pem does not contain full certificate chain, thus ca chain cannot be verified. Replacing with fullchain.pem solves it.
+
+=====================================================
+
+Problem about SSL#2 : “Peer’s certificate issuer has been marked as not trusted by the user” error would come when you try to use git URL with a self-signed certificate.
+=====================================================
+For this, you need to set SSL verify to false in your git config. You can do this in two ways.
+
+Set SSL Verify to false only for specific repo:
+
+  git config http.sslVerify false
+Set SSL Verify to false Globally:
+
+  git config --global http.sslVerify false
+
+==================================================
+
+Git error: RPC failed; result=22, HTTP code = 404
+==================================================
+The solution was to put the .git on the end of the url
+
+git clone http://myURL/projectname
+Cloning into 'projectname'...
+error: RPC failed; result=22, HTTP code = 404
+fatal: The remote end hung up unexpectedly
+However:
+
+git clone http://myURL/projectname.git
+
+=============================================
+Failed to connect to repository : Command "git ls-remote -h https://192.168.56.101/suparuek/pratice.git HEAD" returned status code 128:
+stdout: 
+stderr: fatal: unable to access 'https://192.168.56.101/suparuek/pratice.git/': Peer's certificate issuer has been marked as not trusted by the user.
+=============================================
+Jenkins runs as the user jenkins and has its own .ssh directory to store the list of public keys and known_hosts.
