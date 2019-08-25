@@ -1,0 +1,36 @@
+In CentOS/RedHat
+Using firewalld
+Newer Linux distributions (CentOS 7, RHEL 7, etc.) ship with firewalld which serves as a front-end for iptables.  
+Configuration thru firewalld is done via the firewall-cmd command.  
+Instead of using any of the iptables commands mentioned above, all you should need to do is something like:
+==============================================================================================================
+sudo firewall-cmd --add-port=80/tcp --permanent   (allow incoming connections on port 80.  You can also use --add-service=http instead of adding a port number)
+sudo firewall-cmd --add-port=443/tcp --permanent  (allow incoming connections on port 443.  You can also use --add-service=https instead of adding a port number)
+sudo firewall-cmd --add-forward-port=port=80:proto=tcp:toaddr=127.0.0.1:toport=8080 --permanent
+sudo firewall-cmd --add-forward-port=port=443:proto=tcp:toaddr=127.0.0.1:toport=8443 --permanent
+sudo firewall-cmd --reload
+
+vim /etc/sysconfig/jenkins
+
+# Port Jenkins is listening on.
+# Set to -1 to disable
+#
+JENKINS_PORT="8080"
+
+change it to any port you want and then.
+
+sudo service jenkins restart
+sudo systemctl restart jenkins
+netstat -tulpn
+
+==============================================================================================================
+- OR -
+
+Changing boot configuration
+The launch daemon picks up the command line options from a standard preferences file, /Library/Preferences/org.jenkins-ci.plist. If the file does not exist, built-in defaults are used. The preference files are manipulated using the standard utility defaults.
+
+To view all settings in the file, run: vim
+To get the value of a single setting, run: defaults read /Library/Preferences/org.jenkins-ci SETTING
+To set the value of a setting, run: sudo defaults write /Library/Preferences/org.jenkins-ci SETTING VALUE
+For more information, see man defaults
+See Starting and Accessing Jenkins for various command line options that Jenkins support.
